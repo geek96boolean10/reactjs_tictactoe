@@ -8,7 +8,7 @@ function TTTButton(props)
 	if (props.owner != 0)
 	{
 		return (
-			<button className={"Locked" + (props.owner==1 ? "PosOne" : "NegOne")} color="#555522">
+			<button class={"Locked" + (props.owner==1 ? "PosOne" : "NegOne")} color="#555522">
 				<span className="TextBox">{props.owner}</span>
 			</button>
 		)

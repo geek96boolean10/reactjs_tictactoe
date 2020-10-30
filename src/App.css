@@ -26,11 +26,11 @@ button:active {
 	border: 4px solid #ffffff;
 }
 
-Button.LockedPosOne {
+button.LockedPosOne {
 	border: none;
 	background-color: #330000;
 }
-Button.LockedNegOne {
+button.LockedNegOne {
 	border: none;
 	background-color: #000033;
 }
