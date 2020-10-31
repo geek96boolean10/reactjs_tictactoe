@@ -1,14 +1,13 @@
 import React, {Component} from 'react';
-import logo from './logo.svg';
 import './App.css';
 
 function TTTButton(props)
 { 
 	console.log(props.id + " owned by " + props.owner)
-	if (props.owner != 0)
+	if (props.owner !== 0)
 	{
 		return (
-			<button class={"Locked" + (props.owner==1 ? "PosOne" : "NegOne")} color="#555522">
+			<button class={"Locked" + (props.owner===1 ? "PosOne" : "NegOne")} color="#555522">
 				<span className="TextBox">{props.owner}</span>
 			</button>
 		)
