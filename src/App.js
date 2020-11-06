@@ -70,31 +70,33 @@ class Form extends Component
 	render() {
 		console.log("rendering...")
 		return (
-		<table className="App">
-		<tbody>
-			{
-			this.Grid.map((row, indr)=>{
-				return (
-					<tr key={indr}>
-					{row.map((column, indc)=>{
-						// column is of type dict
-						return (
-							<td key={column.id}>
-								<TTTButton
-									owner = {column.owner}
-									id = {column.id}
-									onClick = {this.handleClick.bind(this)}
-								>
-								</TTTButton>
-							</td>
-						)
-					})}
-					</tr>
-				)
-			})
-			}
-		</tbody>
-		</table>
+		<div>
+			<table className="App">
+			<tbody>
+				{
+				this.Grid.map((row, indr)=>{
+					return (
+						<tr key={indr}>
+						{row.map((column, indc)=>{
+							// column is of type dict
+							return (
+								<td key={column.id}>
+									<TTTButton
+										owner = {column.owner}
+										id = {column.id}
+										onClick = {this.handleClick.bind(this)}
+									>
+									</TTTButton>
+								</td>
+							)
+						})}
+						</tr>
+					)
+				})
+				}
+			</tbody>
+			</table>
+		</div>
 		)
 	}
 }
