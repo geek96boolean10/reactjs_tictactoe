@@ -8,6 +8,11 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+  padding-bottom: 20px;
+}
+.Short
+{
+	min-height: 80px;
 }
 
 button {
@@ -34,6 +39,31 @@ button.LockedNegOne {
 	border: none;
 	background-color: #000033;
 }
+button.WinnerPosOne {
+	border: none;
+	background-color: #770000;
+}
+button.WinnerNegOne {
+	border: none;
+	background-color: #000077;
+}
+button.GameDisabled {
+	border: none;
+	color: #00000000; /* transparent */
+	background-color: #00000000; /* transparent */
+}
+button.GameLost {
+	border: none;
+	color: #555555;
+	background-color: #333333; 
+}
+button.Reset {
+	border: 1px solid #550022;
+	height: 30px;
+	color: white;
+	font-family: monospace;
+	background-color: #777777;
+}
 
 .TextBox {
 	text-align: center;
@@ -43,6 +73,10 @@ button.LockedNegOne {
 	font-size: 24pt;
 	font-family: monospace;
 }
+.Gray {
+	color: #555555;
+}
+
 h6 {
 	text-align: center;
 	vertical-align: text-top;
