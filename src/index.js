@@ -2,11 +2,17 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
+import LastUpdated from './LastUpdated';
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(
     <App />,
   document.getElementById('root')
+);
+
+ReactDOM.render(
+	<LastUpdated/>,
+	document.getElementById('last-updated')
 );
 
 // If you want your app to work offline and load faster, you can change
