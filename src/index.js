@@ -1,12 +1,33 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
+import tictactoe from './tictactoe';
 import LastUpdated from './LastUpdated';
 import * as serviceWorker from './serviceWorker';
+import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
 
 ReactDOM.render(
-    <App />,
+	<Router>
+		<Switch>
+			<Route
+				exact path="/" component={tictactoe}
+			></Route>
+
+			<Route render={
+				(props)=>{
+				//console.log(props)
+				return <div>
+					<p style={{textAlign:"center"}}>
+						The page '{props.location.pathname.substring(1)}' does not exist yet.
+					</p>
+					<p style={{textAlign:"center"}}>
+						<Link to="/">Return to Home</Link>
+					</p>
+				</div>
+				}}>
+			</Route>
+		</Switch>
+	</Router>,
   document.getElementById('root')
 );
 

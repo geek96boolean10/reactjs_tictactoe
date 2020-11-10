@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import './App.css';
+import './tictactoe.css';
 
 function TTTButton(props)
 { 
@@ -56,16 +56,19 @@ class Form extends Component
 			game_over: false,
 			game_winner: 0,
 		}
-		this.reset()
+		this.reset(false)
 	}
 
-	reset()
-	{
-		this.setState({
+	reset(resetState = true)
+	{	
+		if (resetState)
+		{
+			this.setState({
 			current_player: 1,
 			game_over: false,
 			game_winner: 0,
-		})
+			})
+		}
 		// initialize grid with raw data
 		this.Grid = [];
 		this.Hilite = [];
