@@ -55,6 +55,7 @@ class Form extends Component
 			current_player: 1,
 			game_over: false,
 			game_winner: 0,
+			width: 3,
 		}
 		this.reset(false)
 	}
@@ -72,13 +73,13 @@ class Form extends Component
 		// initialize grid with raw data
 		this.Grid = [];
 		this.Hilite = [];
-		//console.log("initing")
-		for (let row = 0; row < 3; row++)
+		console.log("initing new grid of width " + this.state.width);
+		for (let row = 0; row < this.state.width; row++)
 		{
 			var comp = [] // List of data, accessed via column
-			for (var column = 0; column < 3; column++)
+			for (var column = 0; column < this.state.width; column++)
 			{
-				var id = row * 3 + column
+				var id = row * this.state.width + column
 				comp.push(
 					{
 						id : id,
@@ -89,10 +90,12 @@ class Form extends Component
 			//console.log("comp" + row)
 			//console.log(comp)
 			this.Grid.push(comp);
-			this.Hilite.push(new Array(3).fill(false));
+			let width = this.state.width;
+			this.Hilite.push(new Array(width).fill(false));
 		}
 		//console.log("this grid")
 		//console.log(this.Grid)
+		//console.log(this.Hilite)
 	}
 
 	handleClick(id)
@@ -100,8 +103,8 @@ class Form extends Component
 		// check for game condition
 		if (this.state.game_over === true){ return; }
 		//console.log("CLICKED " + id);
-		let column = id % 3;
-		let row = Math.floor(id / 3);
+		let column = id % this.state.width;
+		let row = Math.floor(id / this.state.width);
 		//console.log(`COORD R${row} C${column}`)
 		this.Grid[row][column].owner = this.state.current_player
 		//console.log("Set " + this.Grid[row][column].id + 
@@ -183,6 +186,12 @@ class Form extends Component
 		//console.log("rendering...")
 		return (
 		<div>
+			<div className="App Short" style={{borderCollapse:"collapse", paddingBottom:"0px"}}>
+				<div className="TextBox" style={{fontSize: "16px", verticalAlign: "bottom"}}>
+					A simple tic-tac-toe game.
+					<br/>Connect <b>all</b> cells in a row, column, or diagonal.
+				</div>
+			</div>
 			<table className="App">
 			<tbody>
 				{
@@ -211,12 +220,30 @@ class Form extends Component
 				}
 			</tbody>
 			</table>
-			<table className="App Short">
+			<table className="App Short" style={{borderCollapse:"collapse"}}>
 				<tbody>
-					<tr key="0"><td>
-						<button className="Reset" onClick={this.reset.bind(this)}>
-							Reset
-						</button>
+					<tr key="0">
+						<td className="TextBox" style={{fontSize: "16px", verticalAlign: "bottom"}}>
+						Grid width: <span>
+							<input id="gridWidthInput" type="number" size={3} maxLength={2} min={0} max={20} defaultValue={this.state.width}/>
+							</span>
+						</td>
+						<td>
+							
+						</td>
+					</tr>
+					<tr key="1"><td>
+						<div style={{textAlign:"center"}}><button className="Reset" 
+							onClick={()=>
+								{
+									let v = document.getElementById("gridWidthInput");
+									console.log(v.value);
+									// setstate is async, reset is callback
+									this.setState({width: Number(v.value)}, ()=>{this.reset()});
+								}
+							} style={{textAlign:"center"}}>
+								Reset
+							</button></div>
 					</td></tr>
 				</tbody>
 			</table>
