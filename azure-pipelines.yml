@@ -56,11 +56,6 @@ stages:
       runOnce:
         deploy:
           steps:            
-          - task: Npm@1
-            inputs:
-              command: 'custom'
-              workingDir: '$(System.DefaultWorkingDirectory)'
-              customCommand: 'install -g serve'
           - task: AzureRmWebAppDeployment@4
             displayName: 'Azure App Service Deploy: g96b10-tinker-app-yaml'
             inputs:
@@ -68,8 +63,8 @@ stages:
               appType: webAppLinux
               WebAppName: $(webAppName)
               packageForLinux: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
-              RuntimeStack: 'NODE|10.10'
-              StartupCommand: 'npm run start'
+              RuntimeStack: 'NODE|12-lts'
+              StartupCommand: 'cd /home/site/wwwroot/build && npx serve'
               ScriptType: 'Inline Script'
               InlineScript: |
                 npm install
