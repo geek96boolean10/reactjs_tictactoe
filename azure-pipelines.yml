@@ -56,6 +56,11 @@ stages:
       runOnce:
         deploy:
           steps:            
+          - task: Npm@1
+            inputs:
+              command: 'custom'
+              workingDir: '$(System.DefaultWorkingDirectory)'
+              customCommand: 'install -g serve'
           - task: AzureRmWebAppDeployment@4
             displayName: 'Azure App Service Deploy: g96b10-tinker-app-yaml'
             inputs:
