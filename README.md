@@ -8,6 +8,10 @@ You may also visit the live version of this repository at either:
 - https://g96b10-tinker-app.azurewebsites.net/, hosted on Microsoft Azure
 - https://master.d3lke78smi0fjd.amplifyapp.com/, hosted on AWS Amplify
 
+In addition, you can find the articles I've written about this project at either:
+- https://www.codeproject.com/Articles/5286137/Deploying-a-React-app-to-Azure-App-Service-Tutoria
+- https://medium.com/@geek96boolean10/deploying-a-react-app-to-azure-app-service-in-more-than-one-way-4f488e2efa64
+
 Please allow a few moments while the container is started.
 
 Thanks for visiting!
