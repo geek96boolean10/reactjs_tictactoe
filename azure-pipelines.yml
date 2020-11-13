@@ -64,7 +64,7 @@ stages:
               WebAppName: $(webAppName)
               packageForLinux: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
               RuntimeStack: 'NODE|12-lts'
-              StartupCommand: 'cd /home/site/wwwroot/build && npx serve'
+              StartupCommand: 'pm2 serve /home/site/wwwroot/build --no-daemon --spa'
               ScriptType: 'Inline Script'
               InlineScript: |
                 npm install
