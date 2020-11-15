@@ -1,21 +1,21 @@
-.App {
-  background-color: #282c34;
-  min-height: 400px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  vertical-align: middle;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-  padding-bottom: 20px;
+.ttt.App {
+background-color: #282c34;
+min-height: 400px;
+display: flex;
+flex-direction: column;
+align-items: center;
+vertical-align: middle;
+justify-content: center;
+font-size: calc(10px + 2vmin);
+color: white;
+padding-bottom: 20px;
 }
-.Short
+.ttt.Short
 {
 	min-height: 80px;
 }
 
-button {
+button.ttt {
 	width: 80px;
 	height: 80px;
 	text-align: center;
@@ -23,41 +23,41 @@ button {
 	background-color: #333333;
 	border: 4px dashed #55ad22;
 }
-button:hover {
+button.ttt:hover {
 	background-color: #445544;
 }
-button:active {
+button.ttt:active {
 	background-color: #888888;
 	border: 4px solid #ffffff;
 }
 
-button.LockedPosOne {
+button.ttt.LockedPosOne {
 	border: none;
 	background-color: #330000;
 }
-button.LockedNegOne {
+button.ttt.LockedNegOne {
 	border: none;
 	background-color: #000033;
 }
-button.WinnerPosOne {
+button.ttt.WinnerPosOne {
 	border: none;
 	background-color: #770000;
 }
-button.WinnerNegOne {
+button.ttt.WinnerNegOne {
 	border: none;
 	background-color: #000077;
 }
-button.GameDisabled {
+button.ttt.GameDisabled {
 	border: none;
 	color: #00000000; /* transparent */
 	background-color: #00000000; /* transparent */
 }
-button.GameLost {
+button.ttt.GameLost {
 	border: none;
 	color: #555555;
 	background-color: #333333; 
 }
-button.Reset {
+button.ttt.Reset {
 	border: 1px solid #550022;
 	height: 30px;
 	color: white;
@@ -65,7 +65,7 @@ button.Reset {
 	background-color: #777777;
 }
 
-.TextBox {
+.ttt.TextBox {
 	text-align: center;
 	vertical-align: middle;
 	user-select: none;
@@ -73,11 +73,11 @@ button.Reset {
 	font-size: 24pt;
 	font-family: monospace;
 }
-.Gray {
+.ttt.Gray {
 	color: #555555;
 }
 
-h6 {
+h6.ttt {
 	text-align: center;
 	vertical-align: text-top;
 	user-select: none;

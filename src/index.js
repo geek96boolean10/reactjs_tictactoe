@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import tictactoe from './tictactoe';
+import tictactoe from './ttt/tictactoe';
+import chess from './chess';
 import LastUpdated from './LastUpdated';
 import * as serviceWorker from './serviceWorker';
 import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
@@ -10,7 +11,10 @@ ReactDOM.render(
 	<Router>
 		<Switch>
 			<Route
-				exact path="/" component={tictactoe}
+				exact path="/" component={chess}
+			></Route>
+			<Route
+				path="/ttt" component={tictactoe}
 			></Route>
 
 			<Route render={

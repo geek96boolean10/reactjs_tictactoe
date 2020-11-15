@@ -30,8 +30,8 @@ class LastUpdated extends Component
 		let time = this.state?.date.slice(11,19)
 		return <span className="Text">
 			<div>
-				The latest commit for this page occurred at <br/>
-				{date} {time} UTC.
+				<code>The latest commit for this page occurred at <br/>
+				{date} {time} UTC.</code>
 			</div>
 		</span>
 	}

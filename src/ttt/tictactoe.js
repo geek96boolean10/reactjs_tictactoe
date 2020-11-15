@@ -7,20 +7,20 @@ function TTTButton(props)
 	{
 		if (props.owner === 0)
 		{ return (
-			<button className="GameDisabled">
-				<span className="TextBox"></span>
+			<button className="ttt GameDisabled">
+				<span className="ttt TextBox"></span>
 			</button>
 		)}
 		else if (props.owner !== props.gamewinner)
 		{ return (
-			<button className="GameLost">
-				<span className="TextBox Gray">{props.owner===1 ? "P1" : "P2"}</span>
+			<button className="ttt GameLost">
+				<span className="ttt TextBox Gray">{props.owner===1 ? "P1" : "P2"}</span>
 			</button>
 		)}
 		else if (props.hilite === true)
 		{ return (
-			<button className={"Winner" + (props.owner===1 ? "PosOne" : "NegOne")} color="#555522">
-				<span className="TextBox">{props.owner===1 ? "P1" : "P2"}</span>
+			<button className={"ttt Winner" + (props.owner===1 ? "PosOne" : "NegOne")} color="#555522">
+				<span className="ttt TextBox">{props.owner===1 ? "P1" : "P2"}</span>
 			</button>
 		)}
 	}
@@ -28,7 +28,7 @@ function TTTButton(props)
 	if (props.owner !== 0)
 	{
 		return (
-			<button className={"Locked" + (props.owner===1 ? "PosOne" : "NegOne")} color="#555522">
+			<button className={"ttt Locked" + (props.owner===1 ? "PosOne" : "NegOne")} color="#555522">
 				<span className="TextBox">{props.owner===1 ? "P1" : "P2"}</span>
 			</button>
 		)
@@ -36,8 +36,8 @@ function TTTButton(props)
 	else // no owner, free to play
 	{
 		return (
-			<button onClick={()=>props.onClick(props.id)}>
-				<span className="TextBox">{props.owner}</span>
+			<button className="ttt" onClick={()=>props.onClick(props.id)}>
+				<span className="ttt TextBox">{props.owner}</span>
 			</button>
 		);
 	}
@@ -186,13 +186,13 @@ class Form extends Component
 		//console.log("rendering...")
 		return (
 		<div>
-			<div className="App Short" style={{borderCollapse:"collapse", paddingBottom:"0px"}}>
-				<div className="TextBox" style={{fontSize: "16px", verticalAlign: "bottom"}}>
+			<div className="ttt App Short" style={{borderCollapse:"collapse", paddingBottom:"0px"}}>
+				<div className="ttt TextBox" style={{fontSize: "16px", verticalAlign: "bottom"}}>
 					A simple tic-tac-toe game.
 					<br/>Connect <b>all</b> cells in a row, column, or diagonal.
 				</div>
 			</div>
-			<table className="App">
+			<table className="ttt App">
 			<tbody>
 				{
 				this.Grid.map((row, indr)=>{
@@ -220,10 +220,10 @@ class Form extends Component
 				}
 			</tbody>
 			</table>
-			<table className="App Short" style={{borderCollapse:"collapse"}}>
+			<table className="ttt App Short" style={{borderCollapse:"collapse"}}>
 				<tbody>
 					<tr key="0">
-						<td className="TextBox" style={{fontSize: "16px", verticalAlign: "bottom"}}>
+						<td className="ttt TextBox" style={{fontSize: "16px", verticalAlign: "bottom"}}>
 						Grid width: <span>
 							<input id="gridWidthInput" type="number" size={3} maxLength={2} min={0} max={20} defaultValue={this.state.width}/>
 							</span>
@@ -233,7 +233,7 @@ class Form extends Component
 						</td>
 					</tr>
 					<tr key="1"><td>
-						<div style={{textAlign:"center"}}><button className="Reset" 
+						<div style={{textAlign:"center"}}><button className="ttt Reset" 
 							onClick={()=>
 								{
 									let v = document.getElementById("gridWidthInput");
