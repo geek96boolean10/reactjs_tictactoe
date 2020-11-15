@@ -70,7 +70,7 @@ class Grid extends Component
 			grid[row][4] = new Piece({name:"king", side: row === 0 ? "lite" : "dark"})
 		}
 		// generate test pawn
-		grid[5][4] = new Piece({name:"pawn", side: "lite"})
+		// grid[5][4] = new Piece({name:"pawn", side: "lite"})
 		// generate hilite overlay grid
 		let hilite = this.resetHilite();
 		// attach
@@ -158,6 +158,13 @@ class Grid extends Component
 			this.setState({selected: null})
 			return; 
 		}
+		// only allow pieces of currently playing side to be clicked
+		let side = this.state.turn % 2 === 0 ? "lite" : "dark"
+		if (piece.state.side !== side)
+		{
+			return;
+		}
+
 		console.log("piece clicked at " + row + ", " + column)
 		// reset hilite
 		this.state.hilite = this.resetHilite() // mutate; 'state.selected' will be used to trigger render
@@ -358,6 +365,7 @@ class Grid extends Component
 			return ()=>{
 				console.log("selecting motion")
 				this.selectMotion(this.state.selected.row, this.state.selected.column, row, column)
+				this.setState({turn: this.state.turn + 1})
 			}
 		}
 		// if the space has both, capture piece and select motion.
@@ -368,6 +376,7 @@ class Grid extends Component
 			return ()=>{
 				console.log("selecting capture")
 				this.selectCapture(this.state.selected.row, this.state.selected.column, row, column)
+				this.setState({turn: this.state.turn + 1})
 			}
 		}
 		// if neither, no action occurs
@@ -379,12 +388,17 @@ class Grid extends Component
 		console.log("rendering")
 		return (
 			<div>
-				<div className="App Short" style={{borderCollapse:"collapse", paddingBottom:"0px"}}>
-					<div className="TextBox" style={{fontSize: "16px", verticalAlign: "bottom"}}>
-						A chessboard, work in progress. Try <a href="/ttt" style={{color:"white"}}>tic tac toe</a>!
-					</div>
+			<div className="App Short" style={{borderCollapse:"collapse", paddingBottom:"0px"}}>
+				<div className="TextBox" style={{fontSize: "16px", verticalAlign: "bottom"}}>
+					A chessboard, work in progress. Try <a href="/ttt" style={{color:"white"}}>tic tac toe</a>!
 				</div>
-				<table className="App">
+			</div>
+			<div className="App Short" style={{borderCollapse:"collapse", paddingBottom:"0px"}}>
+				<div className="TextBox" style={{fontSize: "16px", verticalAlign: "bottom"}}>
+					It's {this.state.turn % 2 === 0 ? "lite" : "dark"}'s turn.
+				</div>
+			</div>
+			<table className="App">
 				<tbody>
 					{
 						this.state.grid.map((row, rowIndex)=>{
@@ -409,7 +423,12 @@ class Grid extends Component
 							})
 						}
 				</tbody>
-				</table>
+			</table>
+			<div className="App Short" style={{borderCollapse:"collapse"}}>
+				<div className="TextBox" style={{fontSize: "16px", verticalAlign: "bottom"}}>
+					Turn {this.state.turn}
+				</div>
+			</div>
 			</div>)
 	}
 }
