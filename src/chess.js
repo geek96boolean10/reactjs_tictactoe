@@ -94,11 +94,66 @@ class Grid extends Component
 	/* 
 	When a piece is selected, show the valid spots for the piece to move to.
 	*/
+	// Some general mutators that can be used by multiple pieces
+	eastMutator = (prev)=>{return {row: prev.row, column: prev.column + 1}}
+	westMutator = (prev)=>{return {row: prev.row, column: prev.column - 1}}
+	northMutator = (prev)=>{return {row: prev.row - 1, column: prev.column}}
+	southMutator = (prev)=>{return {row: prev.row + 1, column: prev.column}}
+	seMutator = (prev)=>{return {row: prev.row + 1, column: prev.column + 1}}
+	swMutator = (prev)=>{return {row: prev.row + 1, column: prev.column - 1}}
+	neMutator = (prev)=>{return {row: prev.row - 1, column: prev.column + 1}}
+	nwMutator = (prev)=>{return {row: prev.row - 1, column: prev.column - 1}}
+	knightMutator = (prev)=>{
+		let next = {
+			row: 0, 
+			column: 0, 
+			index: prev.index===undefined ? 1 : prev.index + 1,
+			origin: prev.origin===undefined ? {row:prev.row, column:prev.column} : prev.origin,
+		}
+		// use index to determine which of the 8 positions to go to;
+		// 1 5 7 3
+		// 2 6 8 4
+		let nRow = 0, nCol = 0;
+		switch (next.index)
+		{
+			case 1:
+				nRow = -1; nCol = -2;
+				break;
+			case 2:
+				nRow = 1; nCol = -2;
+				break;
+			case 3:
+				nRow = -1; nCol = 2;
+				break;
+			case 4:
+				nRow = 1; nCol = 2
+				break;
+			case 5:
+				nRow = -2; nCol = -1;
+				break;
+			case 6:
+				nRow = 2; nCol = -1;
+				break;
+			case 7:
+				nRow = -2; nCol = 1;
+				break;
+			case 8:
+				nRow = 2; nCol = 1;
+				break;
+			default:
+				return null
+		}
+		next.row = next.origin.row + nRow
+		next.column = next.origin.column + nCol
+		//console.log(next)
+		return next
+	}
 	selectPiece(row, column)
 	{
 		let piece = this.state.grid[row][column]
 		if (piece === null) // reset hilite and deselect
 		{
+			//console.log("nulled")
 			this.state.hilite = this.resetHilite();
 			this.setState({selected: null})
 			return; 
@@ -113,76 +168,120 @@ class Grid extends Component
 				let homeRow = piece.state.side === "lite" ? 1 : 6
 				let limit = row === homeRow ? 2 : 1
 				let increment = piece.state.side === "lite" ? 1 : -1
-				let pawnMutater = (row, column)=>{return {row: row + increment, column: column}}
-				this.hilitePosition(row, column, pawnMutater, limit, false)
+				let pawnMutater = (prev)=>{return {row: prev.row + increment, column: prev.column}}
+				this.hilitePosition(row, column, pawnMutater, limit, piece.state.side, false)
 				// test diag capture too (both directions)
 				let rowIncrement = piece.state.side === "lite" ? 1 : -1
-				let pawnCaptureMutater = (row, column)=>{return {row: row + rowIncrement, column: column + 1}}
-				this.hilitePosition(row, column, pawnCaptureMutater, 1, true, true)
-				pawnCaptureMutater = (row, column)=>{return {row: row + rowIncrement, column: column - 1}}
-				this.hilitePosition(row, column, pawnCaptureMutater, 1, true, true)
+				let pawnCaptureMutater = (prev)=>{return {row: prev.row + rowIncrement, column: prev.column + 1}}
+				this.hilitePosition(row, column, pawnCaptureMutater, 1, piece.state.side, true, true)
+				pawnCaptureMutater = (prev)=>{return {row: prev.row + rowIncrement, column: prev.column - 1}}
+				this.hilitePosition(row, column, pawnCaptureMutater, 1, piece.state.side, true, true)
 				break;
 			case "castle":
-				let eastMutator = (row, column)=>{return {row: row, column: column + 1}}
-				let westMutator = (row, column)=>{return {row: row, column: column - 1}}
-				let northMutator = (row, column)=>{return {row: row - 1, column: column}}
-				let southMutator = (row, column)=>{return {row: row + 1, column: column}}
+				// general cases first
+				this.hilitePosition(row, column, this.northMutator, 8, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.southMutator, 8, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.eastMutator, 8, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.westMutator, 8, piece.state.side, true, false)
+				// check if castling is allowed
+				break;
+			case "queen":
+				this.hilitePosition(row, column, this.northMutator, 8, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.southMutator, 8, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.eastMutator, 8, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.westMutator, 8, piece.state.side, true, false)
+				// allow multiple-case into bishop's diagonal
+			case "bishop":
+				this.hilitePosition(row, column, this.neMutator, 8, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.nwMutator, 8, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.seMutator, 8, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.swMutator, 8, piece.state.side, true, false)
+				break;
+			case "king":
+				// ugh, but it works
+				this.hilitePosition(row, column, this.northMutator, 1, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.southMutator, 1, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.eastMutator, 1, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.westMutator, 1, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.neMutator, 1, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.nwMutator, 1, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.seMutator, 1, piece.state.side, true, false)
+				this.hilitePosition(row, column, this.swMutator, 1, piece.state.side, true, false)
+				break;
+			case "knight":
+				// gonna cheat and use a more complex mutator
+				this.hilitePosition(row, column, this.knightMutator, 8, piece.state.side, true, false, true)
 				break;
 			default:
 				console.log("unknown piece " + piece.state.name)
-
 		}
 		// trigger render
-		console.log("trying to force render...")
+		//console.log("trying to force render...")
 		this.setState({selected: {row:row, column:column}})
 	}
 
 	/** 
 	@description Sets a series of positions in the hilite grid to be highlighted.
-	@param mutater A function that accepts two numbers as coordinates and returns a new property pair as the
+	@param mutater A function that accepts one property pair as coordinates and returns a new property pair as the
 	next coordinates to apply; returns null to terminate.
 	@param limit The number of cells that may be hilited in one sweep.
 	@param allowCapture Determines if the piece, using this mutater, may capture a piece.
 	@param mustCapture Only hilites a cell if a capturable piece is in it.
+	@param fulfillLimit Forces the
 	*/
-	hilitePosition(row, column, mutater, limit, allowCapture=true, mustCapture=false)
+	hilitePosition(row, column, mutater, limit, side, allowCapture=true, mustCapture=false, fulfillLimit=false)
 	{
 		//console.log("hling source at " + row + ", " + column)
 		// assume initial row and column are the origin; don't hilite it.
-		let next = mutater(row, column)
+		let next = mutater({row: row, column: column})
+		//console.log("initial next")
+		//console.log(next)
 		while (next !== null && limit > 0)
 		{
-
 			let occupied = this.testPosition(next.row, next.column)
 			//console.log("occupancy:")
 			//console.log(occupied)
-			if (occupied === null)
+			if (occupied === null && fulfillLimit !== true)
 			{
 				// space is invalid, stop looking
 				next = null;
+				//console.log("aborting")
+			}
+			else if (occupied === null && fulfillLimit === true) // invalid space but must get next
+			{
+				next = mutater(next);
 			}
 			else if (occupied !== false) // the position is occupied, capture but go no further
 			{
-				if (allowCapture === true)
+				if (allowCapture === true && side !== occupied.state.side) // hilite if opposite team
 				{
 					//console.log("setting true")
 					this.state.hilite[next.row][next.column] = true;
 				}
-				next = null; // disable next evaluation
+				if (fulfillLimit) // even being blocked, continue
+				{
+					next = mutater(next)
+				}
+				else // blocked, don't continue
+				{
+					next = null; // disable next evaluation
+					//console.log("aborting")
+				}
 			}
 			else // no occupancy, hilite and mutate if not mustCapture
 			{
-				if (mustCapture !== true)
+				if (mustCapture !== true) // don't have to capture, so mark empty cell as ok
 				{
 					this.state.hilite[next.row][next.column] = true;
-					next = mutater(next.row, next.column);
+					next = mutater(next);
 					//console.log("next mutater result")
 					//console.log(next)
 				}
-				else
+				else // must capture, but cell is empty
 				{
 					// can't capture, so halt
 					next = null;
+					//console.log("aborting")
 				}
 			}
 			limit -= 1
@@ -195,11 +294,11 @@ class Grid extends Component
 	*/
 	testPosition(row, column)
 	{
-		let obj = this.state.grid[row][column];
+		//console.log("testing position " + row + ", " + column)
+		let obj = this.state.grid[row]?.[column];
+		//console.log(obj)
 		if (obj === undefined)
 			return null;
-		//console.log("testing position")
-		//console.log(obj)
 		if (obj === null)
 		{
 			return false;
@@ -213,7 +312,31 @@ class Grid extends Component
 	*/
 	selectMotion(row, column, targetrow, targetcolumn)
 	{
-		console.log("select motion")
+		//console.log("select motion")
+		let piece = this.state.grid[row][column]
+		//console.log("moving piece " + piece.state.name) // if this throws error, it has failed
+		this.state.grid[row][column] = null;
+		this.state.grid[targetrow][targetcolumn] = piece
+		// force redraw
+		this.state.hilite = this.resetHilite()
+		this.setState({selected: null})
+	}
+	
+	/*
+	If a valid movement is selected, move the selected piece to that location and capture the piece on it.
+	*/
+	selectCapture(row, column, targetrow, targetcolumn)
+	{
+		//console.log("select capture")
+		let piece = this.state.grid[row][column]
+		this.state.grid[row][column] = null;
+		this.state.grid[targetrow][targetcolumn] = null;
+		// force redraw twice to guarantee the capturing piece is shown
+		this.state.hilite = this.resetHilite()
+		this.setState({selected: null}, ()=>{
+			this.state.grid[targetrow][targetcolumn] = piece
+			this.setState({selected: null})
+		})
 	}
 
 	getOnClickFunc(row, column)
@@ -242,9 +365,13 @@ class Grid extends Component
 			this.state.grid[row][column].name !== null &&
 			this.state.hilite[row][column] === true)
 		{
-			
+			return ()=>{
+				console.log("selecting capture")
+				this.selectCapture(this.state.selected.row, this.state.selected.column, row, column)
+			}
 		}
 		// if neither, no action occurs
+		return ()=>{this.selectPiece(row, column)} // select piece has handler for nulls
 	}
 
 	render()
