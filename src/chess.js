@@ -44,6 +44,9 @@ class Grid extends Component
 	constructor(props)
 	{
 		super(props);
+		// manage game connection
+		let chessFunc = process.env.chessFunctionConnectionString
+		console.log("chessFunc url: " + chessFunc)
 		// generate and fill board; grid is row-first, column-second
 		let grid = [];
 		for (let row = 0; row < 8; row++)
