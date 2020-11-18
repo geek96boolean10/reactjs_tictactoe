@@ -2,6 +2,23 @@ import React, {Component} from 'react';
 import './chess.css';
 
 
+let IP = null
+fetch('https://www.cloudflare.com/cdn-cgi/trace').then(response => {
+	return response.text()
+}).then(text => {
+	let split = text.split('\n')
+	// find one with the 'ip' header
+	for (let i = 0; i < split.length; i++)
+	{
+		if (split[i].substr(0, 3) === "ip=")
+			return split[i].substr(3).trim()
+	}
+	return null
+}).then(ip => {
+	console.log("IP is: " + ip)
+	IP = ip
+})
+
 class Piece extends Component
 {
 	constructor(props)
@@ -24,7 +41,7 @@ function Cell(props)
 	//console.log("cell render hilite " + props.hilite)
 	let el = props.element
 	return <td className={"cell " + props.shade}>
-		<button className={props.hilite===true?"hilite":null} onClick={props.onClick}>
+		<button className={"cellb " + (props.hilite===true?"hilite":null)} onClick={props.onClick}>
 		{
 			props.element !== null ? <Piece name={el.state.name} 
 				side={el.state.side} 
@@ -44,9 +61,6 @@ class Grid extends Component
 	constructor(props)
 	{
 		super(props);
-		// manage game connection
-		let chessFunc = process.env.chessFunctionConnectionString
-		console.log("chessFunc url: " + chessFunc)
 		// generate and fill board; grid is row-first, column-second
 		let grid = [];
 		for (let row = 0; row < 8; row++)
@@ -82,8 +96,16 @@ class Grid extends Component
 			hilite: hilite,
 			turn: 0,
 			selected: null,
+			gridlock: true, // prevents grid from being manipulated via click until p2 shows up
+			lobby: null,
+			ijoin: false, // indicates if this client joined a lobby, or if it created one instead
+			side: "lite",
+			statusmsg: "",
+			polling: null,
 		}
-		console.log(grid)
+		// some binding
+		this.request = this.request.bind(this)
+		this.handleServerMsg = this.handleServerMsg.bind(this)
 	}
 
 	resetHilite() // creates a full hilite grid populated with false
@@ -298,8 +320,8 @@ class Grid extends Component
 		}
 	}
 
-	/* 
-	Tests if a position is occupied. Returns the object if one exists, otherwise returns false.
+	/** 
+	@description Tests if a position is occupied. Returns the object if one exists, otherwise returns false.
 	Returns null if the position is invalid.
 	*/
 	testPosition(row, column)
@@ -319,7 +341,6 @@ class Grid extends Component
 
 	/*
 	If a valid movement is selected, move the selected piece to that location.
-	*/
 	selectMotion(row, column, targetrow, targetcolumn)
 	{
 		//console.log("select motion")
@@ -331,12 +352,29 @@ class Grid extends Component
 		this.state.hilite = this.resetHilite()
 		this.setState({selected: null})
 	}
+	*/
 	
 	/*
 	If a valid movement is selected, move the selected piece to that location and capture the piece on it.
+	Does not actually make the move anymore; waits for server response. Server response is piped into
+	performCapture.
 	*/
 	selectCapture(row, column, targetrow, targetcolumn)
 	{
+		this.request({
+			key: "submit",
+			game: this.state.lobby,
+			turn: String(this.state.turn).padStart(3, "0"),
+			move: String(row) + String(column) + String(targetrow) + String(targetcolumn)
+		})
+	}
+
+	performCapture(row, column, targetrow, targetcolumn)
+	{
+		// make sure the piece to move exists, or else we delete the piece by
+		// overwriting the target position with a null
+		if (this.testPosition(row, column) === false)
+			return
 		//console.log("select capture")
 		let piece = this.state.grid[row][column]
 		this.state.grid[row][column] = null;
@@ -351,6 +389,12 @@ class Grid extends Component
 
 	getOnClickFunc(row, column)
 	{
+		if (this.state.gridlock===true)
+		{
+			return ()=>{
+				// purposefully empty
+			}
+		}
 		// if the space contains a piece only, select piece.
 		if (this.state.grid[row][column] !== null && 
 			this.state.grid[row][column].name !== null && 
@@ -367,7 +411,7 @@ class Grid extends Component
 		{
 			return ()=>{
 				console.log("selecting motion")
-				this.selectMotion(this.state.selected.row, this.state.selected.column, row, column)
+				this.selectCapture(this.state.selected.row, this.state.selected.column, row, column)
 				this.setState({turn: this.state.turn + 1})
 			}
 		}
@@ -386,21 +430,191 @@ class Grid extends Component
 		return ()=>{this.selectPiece(row, column)} // select piece has handler for nulls
 	}
 
+	tryLobby() // sends msg to server asking for a lobby
+	{
+		let lobbyString = document.getElementById("lobbyJoinInput")?.value.toString()
+		console.log("attempting to join " + lobbyString)
+		this.request({key:"begin", game:lobbyString})
+	}
+
+	funcurl = "https://g96b10-tinker-app-chessfunction.azurewebsites.net/api/chessFunction?code=/Kv1K73yEYcDjPadDMKTGpvaEyQAHvDt1qVk2Iv0Wjf9mvLxkGOIIg=="
+	request(dataset) // sends a server request to the Azure Function
+	{
+		let url = this.funcurl
+		switch (dataset.key)
+		{
+			case "begin":
+				url += "&src=" + IP
+				url += "&game=" + dataset.game
+				url += "&task=" + "begin"
+				console.log("out url: " + url)
+				break
+			case "poll":
+				url += "&src=" + IP
+				url += "&game=" + dataset.game
+				url += "&task=" + "poll"
+				break
+			case "submit":
+				url += "&src=" + IP
+				url += "&game=" + dataset.game
+				url += "&task=" + "submit" + dataset.turn + dataset.move
+				console.log("out url: " + url)
+				break
+			default:
+				console.log("invalid request key " + dataset.key)
+				return
+		}
+		// make the function call and process the response
+		fetch(url).then(response => {
+			return response.text()
+		}).then(text => {this.handleServerMsg(text, dataset)})
+	}
+
+	startPoll()
+	{
+		if (this.state.polling !== null)
+			return
+		console.log("starting poll")
+		this.setState({polling: true})
+		this.poll()
+	}
+
+	poll()
+	{
+		console.log("polling")
+		this.request({key:"poll", game:this.state.lobby})
+		this.setState({polling: setTimeout(this.poll.bind(this), 2000)})
+	}
+
+	/** @param {string} msg */
+	handleServerMsg(msg, origin)
+	{
+		//console.log("server says " + msg)
+		let key = msg.substr(0, 4)
+		// key can be wait, play, join, turn, load, nope
+		switch (key)
+		{
+			case "wait": // created a game successfully, waiting for someone to join
+				this.setState({lobby: origin.game}) // ori.game is game to create
+				this.startPoll()
+				break;
+			case "play": // p2 has joined me
+				// un-gridlock, allowing me, p1, to play
+				if (this.state.side === "lite") this.setState({gridlock: false})
+				this.startPoll()
+				break
+			case "join": // i am p2 and i joined ok 
+				// still should be gridlocked, but store game info
+				this.setState({
+					lobby: origin.game,
+					side: "dark",
+					ijoin: true,
+					gridlock: true,
+				}) // ori.game is game to join
+				this.startPoll()
+				break
+			case "turn": // the next turn was received
+				// extract turn data
+				console.log(msg)
+				let turnNumber = Number(msg.substr(4, 3))
+				let moveData = {
+					r0: Number(msg.substr(7, 1)),
+					c0: Number(msg.substr(8, 1)),
+					r1: Number(msg.substr(9, 1)),
+					c1: Number(msg.substr(10, 1)),
+				}
+				// perform it, if it hasn't been already
+				this.performCapture(moveData.r0, moveData.c0, moveData.r1, moveData.c1)
+				// based on next turn num, lock or unlock
+				// +1 because sent turn num was what was just played
+				let toLock = (((turnNumber+1)%2===0) === (this.state.side==="lite")) ? false : true
+				//console.log("i'm side " + this.state.side)
+				//console.log("is current play even " + ((turnNumber+1)%2===0) )
+				//console.log("turn " + (turnNumber+1).toString() + ", i'm locked=" + toLock)
+				this.setState({
+					turn: turnNumber + 1,
+					// if even turn and i'm lite, don't lock
+					gridlock: toLock
+				})
+				break
+			case "load": // replay from beginning
+			case "nope":
+				let noped = msg.substr(4)
+				this.setState({statusmsg: noped})
+				alert(noped)
+				break
+			default:
+				console.log("an unknown server response was received: " + key)
+		}
+	}
+
+	gameServerPanel()
+	{
+		if (this.state.lobby === null) // no game is connected, show login
+		{
+			return <div className="App Short" style={{borderCollapse:"collapse", paddingBottom:"0px"}}>
+				<div className="TextBox" style={{fontSize: "16px", verticalAlign: "bottom"}}>
+					Create or join a lobby:<br/><br/>
+					<input style={{background:"#00000000", color:"white", textAlign:"center", padding:5, outline:"false"}}
+						id="lobbyJoinInput" 
+						defaultValue={Math.floor(1000 + Math.random() * Math.floor(8999))}
+					></input>
+					<br/><br/>
+					<button width="20px" onClick={this.tryLobby.bind(this)}>
+						<div className="TextBox" style={{fontSize:16, color:"black"}}>Go</div>
+					</button>
+					<br/><br/>
+				</div>
+			</div>
+		}
+		else if (this.state.ijoin !== true && this.state.gridlock === true) // create a game but no p2
+		{
+			return <div className="App Short" style={{borderCollapse:"collapse", paddingBottom:"0px"}}>
+				<div className="TextBox" style={{fontSize: "16px", verticalAlign: "bottom"}}>
+					Lobby created; ask someone else to join your lobby!
+					<br/>
+					Lobby code: <span style={{fontSize: "24px"}}>{this.state.lobby}</span>
+					<br/>
+					You'll play as <em>lite</em>.
+					<br/>
+					<br/>
+					<br/>
+				</div>
+			</div>
+		}
+		else // game lobby registered and no more gridlock
+		{
+			return <div className="App Short" style={{borderCollapse:"collapse", paddingBottom:"0px"}}>
+			<div className="TextBox" style={{fontSize: "16px", verticalAlign: "bottom"}}>
+				<br/>
+				<br/>
+				Lobby: <span style={{fontSize: "24px"}}>{this.state.lobby}</span>
+				<br/>
+				You're playing as <em>{this.state.side}</em>.
+				<br/>
+				<br/>
+				<br/>
+			</div>
+		</div>
+		}
+	}
+
+	/**It's {this.state.turn % 2 === 0 ? "lite" : "dark"}'s turn. */
+
 	render()
 	{
-		console.log("rendering")
+		//console.log("rendering")
 		return (
 			<div>
-			<div className="App Short" style={{borderCollapse:"collapse", paddingBottom:"0px"}}>
+			<div className="App Short" style={{borderCollapse:"collapse", paddingBottom:"0px", minHeight:"40px"}}>
 				<div className="TextBox" style={{fontSize: "16px", verticalAlign: "bottom"}}>
 					A chessboard, work in progress. Try <a href="/ttt" style={{color:"white"}}>tic tac toe</a>!
 				</div>
 			</div>
-			<div className="App Short" style={{borderCollapse:"collapse", paddingBottom:"0px"}}>
-				<div className="TextBox" style={{fontSize: "16px", verticalAlign: "bottom"}}>
-					It's {this.state.turn % 2 === 0 ? "lite" : "dark"}'s turn.
-				</div>
-			</div>
+			{
+				// show either a join/create game panel or the current game status panel
+				this.gameServerPanel()
+			}
 			<table className="App">
 				<tbody>
 					{

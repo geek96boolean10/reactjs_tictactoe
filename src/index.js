@@ -7,26 +7,6 @@ import LastUpdated from './LastUpdated';
 import * as serviceWorker from './serviceWorker';
 import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
 
-console.log("found env vars:")
-process.env.CFCS = "testing"
-console.log(process.env)
-console.log(process.env['CFCS'])
-
-fetch('https://www.cloudflare.com/cdn-cgi/trace').then(response => {
-	return response.text()
-}).then(text => {
-	let split = text.split('\n')
-	// find one with the 'ip' header
-	for (let i = 0; i < split.length; i++)
-	{
-		if (split[i].substr(0, 3) === "ip=")
-			return split[i].substr(3).trim()
-	}
-	return null
-}).then(ip => {
-	console.log("IP is: " + ip)
-})
-
 ReactDOM.render(
 	<Router>
 		<Switch>
